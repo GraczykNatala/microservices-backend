@@ -1,6 +1,7 @@
 package com.example.auth.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
@@ -21,9 +22,12 @@ public class User implements UserDetails {
                     strategy = GenerationType.SEQUENCE)
     @SequenceGenerator(name = "users_id_seq",
                        sequenceName = "users_id_seq", allocationSize = 1)
+    @Getter
     private long id;
+    @Getter
     private String uuid;
     private String login;
+    @Getter
     private String email;
     private String password;
     @Enumerated(EnumType.STRING)
@@ -92,4 +96,5 @@ public class User implements UserDetails {
             setUuid(UUID.randomUUID().toString());
         }
     }
+
 }

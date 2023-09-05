@@ -2,8 +2,10 @@ package com.example.auth.controller;
 
 import com.example.auth.entity.AuthResponse;
 import com.example.auth.entity.Code;
+import com.example.auth.entity.User;
 import com.example.auth.entity.UserRegisterDto;
 import com.example.auth.service.UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,4 +25,9 @@ public class AuthController {
             userService.register(user);
             return ResponseEntity.ok(new AuthResponse(Code.SUCCESS));
         }
+
+    @RequestMapping(path = "/login", method = RequestMethod.POST)
+    public ResponseEntity<?> addNewUser(@RequestBody User user, HttpServletResponse response){
+        return userService.login(response, user);
+    }
 }
