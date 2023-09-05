@@ -3,7 +3,9 @@ package com.example.auth.service;
 
 import com.example.auth.entity.*;
 import com.example.auth.repository.UserRepository;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Response;
@@ -15,6 +17,9 @@ import org.springframework.security.authentication.AuthenticationManager;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -38,10 +43,26 @@ public class UserService {
         return userRepository.saveAndFlush(user);
     }
 
-    public String generateToken(String username){
-        return jwtService.generateToken(username);
+    public String generateToken(String username, int exp){
+        return jwtService.generateToken(username, exp);
     }
-    public void validateToken(String token){
+    public void validateToken(HttpServletRequest request) throws ExpiredJwtException, IllegalArgumentException {
+        String token = null;
+        String refresh = null;
+        for(Cookie value : Arrays.stream(request.getCookies()).toList()) {
+            if (value.getName().equals("token")) {
+                token = value.getValue();
+            } else if (value.getName().equals("refresh")) {
+                refresh = value.getValue();
+            }
+        }
+        try {
+            jwtService.validateToken(token);
+        } catch(IllegalArgumentException | ExpiredJwtException e){
+            jwtService.validateToken(refresh);
+        }
+
+
          jwtService.validateToken(token);
     }
     public void register(UserRegisterDto userRegisterDto) {
@@ -64,8 +85,8 @@ public class UserService {
                      .authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(),
                                                                            authRequest.getPassword()));
              if(authenticate.isAuthenticated()) {
-                 Cookie cookie = cookieService.generateCookie("token", generateToken(authRequest.getUsername()),exp);
-                 Cookie refresh = cookieService.generateCookie("refresh", generateToken(authRequest.getUsername()),refreshExp);
+                 Cookie cookie = cookieService.generateCookie("token", generateToken(authRequest.getUsername(), exp),exp);
+                 Cookie refresh = cookieService.generateCookie("refresh", generateToken(authRequest.getUsername(), refreshExp), refreshExp);
                  response.addCookie(cookie);
                  response.addCookie(refresh);
                  return ResponseEntity.ok(
@@ -73,6 +94,7 @@ public class UserService {
                                  .builder()
                                  .login(user.getUsername())
                                  .email(user.getEmail())
+                                 .role(user.getRole())
                                  .build());
              } else {
                  return ResponseEntity.ok(new AuthResponse(Code.LOGIN_FAILED));

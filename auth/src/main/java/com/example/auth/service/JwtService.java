@@ -1,5 +1,6 @@
 package com.example.auth.service;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
@@ -17,11 +18,10 @@ public class JwtService {
     public JwtService(@Value("${jwt.secret}") String secret,
                       @Value("${jwt.exp}") int exp){
         SECRET = secret;
-        this.exp = exp;
     }
     public final String SECRET;
-    private final int exp;
-    public void validateToken(final String token) {
+
+    public void validateToken(final String token) throws ExpiredJwtException, IllegalArgumentException {
         Jwts.parserBuilder()
                 .setSigningKey(getSignKey())
                 .build()
@@ -33,12 +33,12 @@ public class JwtService {
             return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String generateToken(String username) {
+    public String generateToken(String username, int exp) {
         Map<String, Object> claims = new HashMap<>();
-        return createToken(claims, username);
+        return createToken(claims, username, exp);
     }
 
-    private String createToken(Map<String, Object> claims, String username) {
+    private String createToken(Map<String, Object> claims, String username, int exp) {
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(username)

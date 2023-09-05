@@ -30,6 +30,7 @@ public class User implements UserDetails {
     @Getter
     private String email;
     private String password;
+    @Getter
     @Enumerated(EnumType.STRING)
     private Role role;
     @Column(name = "islock")
