@@ -15,7 +15,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Table(name = "users")
 @Entity
-public class AppUser implements UserDetails {
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue(generator = "user_id_seq",
@@ -33,7 +33,7 @@ public class AppUser implements UserDetails {
     private boolean isEnabled;
 
 
-    public AppUser(
+    public User(
             long id, String uuid, String login, String email, String password, Role role, boolean isLock,
             boolean isEnabled) {
         this.id = id;
