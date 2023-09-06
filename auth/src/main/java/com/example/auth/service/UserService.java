@@ -69,6 +69,15 @@ public class UserService {
         }
     }
 
+    public ResponseEntity<LoginResponse> loggedIn(HttpServletRequest request, HttpServletResponse response) {
+     try{
+         validateToken(request, response);
+         return ResponseEntity.ok(new LoginResponse(true));
+     } catch(ExpiredJwtException | IllegalArgumentException e){
+         return ResponseEntity.ok(new LoginResponse(false));
+     }
+    }
+
     private User saveUser(User user) {
          user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.saveAndFlush(user);
