@@ -1,6 +1,8 @@
 package com.example.auth.controller;
 
 import com.example.auth.entity.*;
+import com.example.auth.exceptions.UserExistingWithEmail;
+import com.example.auth.exceptions.UserExistingWithName;
 import com.example.auth.service.UserService;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,8 +23,18 @@ public class AuthController {
 
     @RequestMapping(path = "/register", method = RequestMethod.POST)
         public ResponseEntity<AuthResponse> addNewUser(@Valid @RequestBody UserRegisterDto user){
+
+        try{
             userService.register(user);
             return ResponseEntity.ok(new AuthResponse(Code.SUCCESS));
+        } catch(UserExistingWithName e){
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new AuthResponse(Code.USERNAME_ALREADY_EXIST));
+        } catch(UserExistingWithEmail e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new AuthResponse(Code.EMAIL_ALREADY_EXIST));
+        }
         }
 
     @RequestMapping(path = "/login", method = RequestMethod.POST)

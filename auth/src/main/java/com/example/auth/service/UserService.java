@@ -1,7 +1,10 @@
 package com.example.auth.service;
 
 
+import ch.qos.logback.core.boolex.EvaluationException;
 import com.example.auth.entity.*;
+import com.example.auth.exceptions.UserExistingWithEmail;
+import com.example.auth.exceptions.UserExistingWithName;
 import com.example.auth.repository.UserRepository;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
@@ -69,7 +72,16 @@ public class UserService {
 
          jwtService.validateToken(token);
     }
-    public void register(UserRegisterDto userRegisterDto) {
+    public void register(UserRegisterDto userRegisterDto) throws UserExistingWithName, UserExistingWithEmail {
+         userRepository.findUserByLogin(userRegisterDto.getLogin())
+                 .ifPresent(value -> {
+                     throw new UserExistingWithName("Użytkownik o podanej nazwie już istnieje");
+                 });
+        userRepository.findUserByEmail(userRegisterDto.getEmail())
+                .ifPresent(value -> {
+                    throw new UserExistingWithEmail("Użytkownik o podanym adresie email już istnieje");
+                });
+
         User user = new User();
         user.setLogin(userRegisterDto.getLogin());
         user.setPassword(userRegisterDto.getPassword());
