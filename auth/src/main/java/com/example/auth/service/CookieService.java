@@ -1,7 +1,9 @@
 package com.example.auth.service;
 
 import jakarta.servlet.http.Cookie;
+import org.springframework.stereotype.Component;
 
+@Component
 public class CookieService {
 
     public Cookie generateCookie(String name, String value, int exp){
