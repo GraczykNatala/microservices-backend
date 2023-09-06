@@ -31,7 +31,12 @@ public class UserConfiguration {
         return http
                 .csrf(csrf->csrf.disable())
                 .authorizeHttpRequests(auth->auth
-                        .requestMatchers("/api/v1/auth/register")
+                        .requestMatchers("/api/v1/auth/register",
+                                         "/api/v1/auth/login",
+                                         "/api/v1/auth/validate",
+                                         "/api/v1/auth/reset-password",
+                                         "/api/v1/auth/activate"
+                                         )
                         .permitAll())
                 .build();
     }

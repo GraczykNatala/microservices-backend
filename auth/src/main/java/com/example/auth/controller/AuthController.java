@@ -1,6 +1,7 @@
 package com.example.auth.controller;
 
 import com.example.auth.entity.*;
+import com.example.auth.exceptions.UserDontExistException;
 import com.example.auth.exceptions.UserExistingWithEmail;
 import com.example.auth.exceptions.UserExistingWithName;
 import com.example.auth.service.UserService;
@@ -66,6 +67,35 @@ public class AuthController {
             MethodArgumentNotValidException ex
     ){
         return new ValidationMessage(ex.getBindingResult().getAllErrors().get(0).getDefaultMessage());
+    }
+
+
+    @RequestMapping(path = "/activate", method = RequestMethod.GET)
+    public ResponseEntity<AuthResponse> activateUser(@RequestParam String uid){
+        try{
+            userService.activateUser(uid);
+            return ResponseEntity.ok(new AuthResponse(Code.SUCCESS));
+        } catch(UserDontExistException e){
+            return ResponseEntity.status(400).body(new AuthResponse(Code.USER_NOT_EXIST));
+        }
+    }
+    @RequestMapping(path = "/reset-password", method = RequestMethod.POST)
+    public ResponseEntity<AuthResponse> sendMailRecovery(@RequestBody ResetPasswordData resetPasswordData){
+        try {
+            userService.recoveryPassword(resetPasswordData.getEmail());
+            return ResponseEntity.ok(new AuthResponse(Code.SUCCESS));
+        } catch(UserDontExistException e){
+            return  ResponseEntity.status(400).body(new AuthResponse(Code.USER_NOT_EXIST));
+        }
+    }
+    @RequestMapping(path = "/reset-password", method = RequestMethod.PATCH)
+    public ResponseEntity<AuthResponse> recoveryMail(@RequestBody ChangePasswordData changePasswordData){
+        try {
+            userService.resetPassword(changePasswordData);
+            return ResponseEntity.ok(new AuthResponse(Code.SUCCESS));
+        } catch(UserDontExistException e){
+            return  ResponseEntity.status(400).body(new AuthResponse(Code.USER_NOT_EXIST));
+        }
     }
 }
 

@@ -59,6 +59,9 @@ public class User implements UserDetails {
     public Role getRole() {
         return role;
     }
+    public String getUuid(){
+        return this.uuid;
+    }
 
     private long getId(){
         return id;

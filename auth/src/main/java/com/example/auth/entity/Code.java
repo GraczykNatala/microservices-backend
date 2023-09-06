@@ -2,8 +2,8 @@ package com.example.auth.entity;
 
 public enum Code {
     SUCCESS("Operacja zakończona sukcesem"),
-    LOGIN_FAILED("Nie udało się zalogować"),
-    USER_NOT_EXIST("Użytkownik o wskazanej nazwie nie istnieje"),
+    LOGIN_FAILED("Nie udało się zalogować, uźytkownik nie istnieje lub nie aktywował konta"),
+    USER_NOT_EXIST("Użytkownik nie istnieje"),
     USERNAME_ALREADY_EXIST("Użytkownik o wskazanej nazwie już istnieje"),
     EMAIL_ALREADY_EXIST("Użytkownik z tym adresem email już istnieje"),
     PERMIT("Przyznano dostęp"),
