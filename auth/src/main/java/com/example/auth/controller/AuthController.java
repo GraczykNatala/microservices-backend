@@ -33,9 +33,9 @@ public class AuthController {
         return userService.login(response, user);
     }
     @RequestMapping(path = "/validate", method = RequestMethod.GET)
-    public ResponseEntity<AuthResponse> validateToken(HttpServletRequest request) {
+    public ResponseEntity<AuthResponse> validateToken(HttpServletRequest request, HttpServletResponse response) {
     try {
-        userService.validateToken(request);
+        userService.validateToken(request, response);
         return  ResponseEntity.ok(new AuthResponse(Code.PERMIT));
     } catch(IllegalArgumentException | ExpiredJwtException e){
         return ResponseEntity.status(401).body(new AuthResponse(Code.BAD_TOKEN));

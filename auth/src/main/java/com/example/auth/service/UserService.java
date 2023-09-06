@@ -46,11 +46,11 @@ public class UserService {
     public String generateToken(String username, int exp){
         return jwtService.generateToken(username, exp);
     }
-    public void validateToken(HttpServletRequest request) throws ExpiredJwtException, IllegalArgumentException {
+    public void validateToken(HttpServletRequest request, HttpServletResponse response) throws ExpiredJwtException, IllegalArgumentException {
         String token = null;
         String refresh = null;
         for(Cookie value : Arrays.stream(request.getCookies()).toList()) {
-            if (value.getName().equals("token")) {
+            if (value.getName().equals("Authorization")) {
                 token = value.getValue();
             } else if (value.getName().equals("refresh")) {
                 refresh = value.getValue();
@@ -60,6 +60,10 @@ public class UserService {
             jwtService.validateToken(token);
         } catch(IllegalArgumentException | ExpiredJwtException e){
             jwtService.validateToken(refresh);
+            Cookie refreshCookie = cookieService.generateCookie("refresh", jwtService.refreshToken(refresh, refreshExp), refreshExp);
+            Cookie cookie = cookieService.generateCookie("Authorization", jwtService.refreshToken(refresh, exp), exp);
+            response.addCookie(cookie);
+            response.addCookie(refreshCookie);
         }
 
 
@@ -80,12 +84,12 @@ public class UserService {
 
     public ResponseEntity<?> login(HttpServletResponse response,  User authRequest) {
          User user = userRepository.findUserByLogin(authRequest.getUsername()).orElse(null);
-         if(user !=null) {
+         if(user != null) {
              Authentication authenticate = authenticationManager
                      .authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(),
                                                                            authRequest.getPassword()));
              if(authenticate.isAuthenticated()) {
-                 Cookie cookie = cookieService.generateCookie("token", generateToken(authRequest.getUsername(), exp),exp);
+                 Cookie cookie = cookieService.generateCookie("Authorization", generateToken(authRequest.getUsername(), exp),exp);
                  Cookie refresh = cookieService.generateCookie("refresh", generateToken(authRequest.getUsername(), refreshExp), refreshExp);
                  response.addCookie(cookie);
                  response.addCookie(refresh);
