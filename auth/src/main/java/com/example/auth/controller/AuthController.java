@@ -22,8 +22,7 @@ public class AuthController {
     private final UserService userService;
 
     @RequestMapping(path = "/register", method = RequestMethod.POST)
-        public ResponseEntity<AuthResponse> addNewUser(@Valid @RequestBody UserRegisterDto user){
-
+        public ResponseEntity<AuthResponse> login(@Valid @RequestBody UserRegisterDto user){
         try{
             userService.register(user);
             return ResponseEntity.ok(new AuthResponse(Code.SUCCESS));
@@ -38,9 +37,15 @@ public class AuthController {
         }
 
     @RequestMapping(path = "/login", method = RequestMethod.POST)
-    public ResponseEntity<?> addNewUser(@RequestBody User user, HttpServletResponse response){
+    public ResponseEntity<?> login(@RequestBody User user, HttpServletResponse response){
         return userService.login(response, user);
     }
+
+    @RequestMapping(path = "/auto-login", method = RequestMethod.GET)
+    public ResponseEntity<?> loggedIn(HttpServletResponse response, HttpServletRequest request){
+        return userService.loginByToken(request, response);
+    }
+
     @RequestMapping(path = "/validate", method = RequestMethod.GET)
     public ResponseEntity<AuthResponse> validateToken(HttpServletRequest request, HttpServletResponse response) {
     try {

@@ -48,7 +48,7 @@ public class JwtService {
                 .compact();
     }
 
-    private String getSubject(final String token) {
+    public String getSubject(final String token) {
         return Jwts.parser()
                 .setSigningKey(SECRET)
                 .parseClaimsJws(token)

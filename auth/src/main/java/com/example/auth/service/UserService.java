@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -41,7 +42,34 @@ public class UserService {
 
 
     private final AuthenticationManager authenticationManager;
-     private User saveUser(User user) {
+
+    public ResponseEntity<?> loginByToken(HttpServletRequest request, HttpServletResponse response) {
+        try{
+            validateToken(request, response);
+            String refresh = null;
+            for(Cookie value : Arrays.stream(request.getCookies()).toList()) {
+                if (value.getName().equals("refresh")) { //there's no sense to check token, because if refresh is invalid, then token is invalid too
+                    refresh = value.getValue();
+                }
+            }
+            String login = jwtService.getSubject(refresh);
+            User user = userRepository.findUserByLoginAndLockAndEnabled(login).orElse(null);
+            if (user != null){
+                return ResponseEntity.ok(
+                        UserRegisterDto
+                                .builder()
+                                .login(user.getUsername())
+                                .email(user.getEmail())
+                                .role(user.getRole())
+                                .build());
+            }
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthResponse(Code.LOGIN_FAILED));
+        } catch(ExpiredJwtException | IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthResponse(Code.BAD_TOKEN));
+        }
+    }
+
+    private User saveUser(User user) {
          user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.saveAndFlush(user);
     }
