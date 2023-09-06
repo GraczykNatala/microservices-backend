@@ -1,6 +1,7 @@
 package com.example.auth.configuration;
 
-import org.springframework.boot.autoconfigure.neo4j.Neo4jProperties;
+import com.example.auth.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -14,22 +15,24 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
+@RequiredArgsConstructor
 public class UserConfiguration {
+
+
+    private final UserRepository userRepository;
 
     @Bean
     UserDetailsService userDetailsService() {
-        return new CustomUserDetailsService();
+        return new CustomUserDetailsService(userRepository);
     }
-
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-                .csrf()
-                .disable()
-                .authorizeHttpRequests()
-                .requestMatchers("/api/v1/auth/register").permitAll()
-                .and()
+                .csrf(csrf->csrf.disable())
+                .authorizeHttpRequests(auth->auth
+                        .requestMatchers("/api/v1/auth/register")
+                        .permitAll())
                 .build();
     }
 

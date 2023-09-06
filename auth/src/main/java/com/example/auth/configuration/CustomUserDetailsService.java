@@ -21,6 +21,6 @@ public class CustomUserDetailsService implements UserDetailsService {
         Optional<User> user = userRepository.findUserByLogin(username);
         return user
                 .map(CustomUserDetails::new)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with name: " + username))
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with name: " + username));
     }
 }

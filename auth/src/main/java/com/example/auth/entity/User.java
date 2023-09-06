@@ -24,13 +24,11 @@ public class User implements UserDetails {
                        sequenceName = "users_id_seq", allocationSize = 1)
     @Getter
     private long id;
-    @Getter
     private String uuid;
     private String login;
-    @Getter
     private String email;
+
     private String password;
-    @Getter
     @Enumerated(EnumType.STRING)
     private Role role;
     @Column(name = "islock")
@@ -57,6 +55,17 @@ public class User implements UserDetails {
         generateUuid();
     }
 
+
+    public Role getRole() {
+        return role;
+    }
+
+    private long getId(){
+        return id;
+    }
+    public String getEmail() {
+        return email;
+    }
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.name()));
@@ -97,5 +106,4 @@ public class User implements UserDetails {
             setUuid(UUID.randomUUID().toString());
         }
     }
-
 }
