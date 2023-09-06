@@ -18,7 +18,11 @@ public class Carousel {
 
     public Carousel(EurekaClient eurekaClient) {
         this.eurekaClient = eurekaClient;
-        initAuthCarousel();
+        try {
+            initAuthCarousel();
+        } catch(NullPointerException e) {
+            e.printStackTrace();
+        }
         events();
     }
     private void initAuthCarousel() {
@@ -29,7 +33,12 @@ public class Carousel {
             initAuthCarousel();
         });
         eurekaClient.unregisterEventListener(eurekaEvent -> {
-            initAuthCarousel();
+            try {
+                initAuthCarousel();
+            } catch(NullPointerException e){
+                e.printStackTrace();
+            }
+
         });
     }
 
