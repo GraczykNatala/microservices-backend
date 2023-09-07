@@ -46,9 +46,9 @@ public class Carousel {
         StringBuilder stringBuilder = new StringBuilder();
         InstanceInfo instance = instances.get(currentIndex);
         stringBuilder.append(instance.getIPAddr()).append(":").append(instance.getPort());
-        if(instances.size()-1 == currentIndex) {
+        if (instances.size()-1 == currentIndex){
             currentIndex = 0;
-        } else {
+        }else {
             currentIndex++;
         }
         return stringBuilder.toString();
