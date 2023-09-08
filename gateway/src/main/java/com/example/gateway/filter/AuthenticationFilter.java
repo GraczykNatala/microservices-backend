@@ -41,7 +41,6 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                 if (!exchange.getRequest().getCookies().containsKey(HttpHeaders.AUTHORIZATION) && !exchange.getRequest().getCookies().containsKey("refresh")) {
                     exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
                     exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
-
                     StringBuilder stringBuilder = new StringBuilder("{\n")
                             .append("\"timestamp\": \"")
                             .append(new Timestamp(System.currentTimeMillis()))
@@ -69,7 +68,6 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                                 .append(refreshCookie.getName())
                                 .append("=")
                                 .append(refreshCookie.getValue()).toString();
-
                         HttpHeaders httpHeaders = new HttpHeaders();
                         httpHeaders.add("Cookie",cookies);
                         HttpEntity<Object> entity = new HttpEntity<>(httpHeaders);
@@ -93,12 +91,14 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                         }
                     }
                 } catch (Exception e) {
-                    exchange.getResponse().writeWith(Flux.just(new DefaultDataBufferFactory().wrap(e.getMessage().getBytes())));
+                    return exchange.getResponse().writeWith(Flux.just(new DefaultDataBufferFactory().wrap(e.getMessage().getBytes())));
                 }
             }
             return chain.filter(exchange);
         });
     }
+
+
 
 
     public static class Config {

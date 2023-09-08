@@ -37,10 +37,16 @@ public class AuthController {
         }
         }
 
-    @RequestMapping(path = "/login", method = RequestMethod.POST)
+
+    @RequestMapping(path = "/login",method = RequestMethod.POST)
     public ResponseEntity<?> login(@RequestBody User user, HttpServletResponse response){
-        return userService.login(response, user);
+        return userService.login(response,user);
     }
+    @RequestMapping(path = "/logout",method = RequestMethod.GET)
+    public ResponseEntity<?> logout( HttpServletResponse response,HttpServletRequest request){
+        return userService.logout(request, response);
+    }
+
 
     @RequestMapping(path = "/auto-login", method = RequestMethod.GET)
     public ResponseEntity<?> autoLogin(HttpServletResponse response, HttpServletRequest request){
@@ -51,15 +57,16 @@ public class AuthController {
         return userService.loggedIn(request, response);
     }
 
-    @RequestMapping(path = "/validate", method = RequestMethod.GET)
-    public ResponseEntity<AuthResponse> validateToken(HttpServletRequest request, HttpServletResponse response) {
-    try {
-        userService.validateToken(request, response);
-        return  ResponseEntity.ok(new AuthResponse(Code.PERMIT));
-    } catch(IllegalArgumentException | ExpiredJwtException e){
-        return ResponseEntity.status(401).body(new AuthResponse(Code.BAD_TOKEN));
+    @RequestMapping(path = "/validate",method = RequestMethod.GET)
+    public ResponseEntity<AuthResponse> validateToken(HttpServletRequest request,HttpServletResponse response) {
+        try{
+            userService.validateToken(request,response);
+            return ResponseEntity.ok(new AuthResponse(Code.PERMIT));
+        }catch (IllegalArgumentException | ExpiredJwtException e){
+            return ResponseEntity.status(401).body(new AuthResponse(Code.BAD_TOKEN));
+        }
     }
-    }
+
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
