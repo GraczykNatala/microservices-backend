@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Date;
+
 @Table(name = "resetoperations")
 @Entity
 @Getter
@@ -27,7 +29,8 @@ public class ResetOperations {
     private User user;
 
     @Column(name = "createdate")
-    private String createDate;
+    @Temporal(TemporalType.TIMESTAMP) // Określa, że to pole jest typu timestamp
+    private Date createDate;
 
     private String uid;
 }
