@@ -187,25 +187,25 @@ public class UserService {
                                 .role(user.getRole())
                                 .build());
             } else {
-                return ResponseEntity.ok(new AuthResponse(Code.LOGIN_FAILED));
-            }
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthResponse(Code.WRONG_DATA));            }
         }
-        return ResponseEntity.ok(new AuthResponse(Code.USER_NOT_EXIST));
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthResponse(Code.LOGIN_FAILED));
     }
 
 
-    public void resetPassword(ChangePasswordData changePasswordData) throws UserDontExistException {
+    public void resetPassword(ChangePasswordData changePasswordData) throws UserDontExistException{
         ResetOperations resetOperations = resetOperationsRepository.findByUid(changePasswordData.getUid()).orElse(null);
-        if(resetOperations != null) {
-            User user = userRepository.findUserByUuid(changePasswordData.getUid()).orElse(null);
-            if(user !=null) {
+        if (resetOperations != null){
+            User user = userRepository.findUserByUuid(resetOperations.getUser().getUuid()).orElse(null);
+
+            if (user != null){
                 user.setPassword(changePasswordData.getPassword());
                 saveUser(user);
                 resetOperationService.endOperation(resetOperations.getUid());
                 return;
             }
         }
-        throw new UserDontExistException("User do not exist");
+        throw new UserDontExistException("User dont exist");
     }
 
 }
