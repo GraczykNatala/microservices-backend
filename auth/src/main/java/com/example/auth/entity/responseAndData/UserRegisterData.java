@@ -1,5 +1,6 @@
-package com.example.auth.entity;
+package com.example.auth.entity.responseAndData;
 
+import com.example.auth.entity.enums.Role;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,7 +12,7 @@ import jakarta.validation.constraints.Email;
 @Getter
 @Setter
 @Builder
-public class UserRegisterDto {
+public class UserRegisterData {
 
     @Length(min = 5, max = 50, message = "Login powinien mieć od 5 do 50 znaków")
     private String login;

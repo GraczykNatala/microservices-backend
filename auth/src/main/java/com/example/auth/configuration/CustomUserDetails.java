@@ -1,6 +1,6 @@
 package com.example.auth.configuration;
 
-import com.example.auth.entity.Role;
+import com.example.auth.entity.enums.Role;
 import com.example.auth.entity.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

@@ -1,4 +1,4 @@
-package com.example.auth.entity;
+package com.example.auth.entity.enums;
 
 public enum Code {
     SUCCESS("Operacja zakończona sukcesem"),

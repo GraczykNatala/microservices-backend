@@ -1,5 +1,6 @@
-package com.example.auth.entity;
+package com.example.auth.entity.responseAndData;
 
+import com.example.auth.entity.enums.Code;
 import lombok.Getter;
 import lombok.Setter;
 

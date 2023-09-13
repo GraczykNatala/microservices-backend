@@ -1,6 +1,7 @@
 package com.example.auth.configuration;
 
 import com.example.auth.repository.UserRepository;
+import com.example.auth.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +15,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+
+import static com.example.auth.utils.SecurityUtils.*;
 
 @Configuration
 @EnableWebSecurity
@@ -29,11 +32,20 @@ public class UserConfiguration {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http.csrf().disable()
-                .authorizeHttpRequests()
-                .requestMatchers("/api/v1/auth/register","/api/v1/auth/login","/api/v1/auth/validate","/api/v1/auth/reset-password","/api/v1/auth/activate","/api/v1/auth/logout","/api/v1/auth/auto-login","/api/v1/auth/logged-in","/api/v1/auth/authorize").permitAll()
-                .and()
+        return http.csrf(csrf-> csrf.disable())
+                .authorizeHttpRequests(auth-> auth
+                        .requestMatchers(REGISTER_ENDPOINT,
+                                         LOGIN_ENDPOINT,
+                                         VALIDATE_ENDPOINT,
+                                         RESET_PASSWORD_ENDPOINT,
+                                         ACTIVATE_ENDPOINT,
+                                         LOGOUT_ENDPOINT,
+                                         AUTO_LOGIN_ENDPOINT,
+                                         LOGGED_IN_ENDPOINT,
+                                         AUTHORIZE_ENDPOINT)
+                        .permitAll())
                 .build();
+
     }
     @Bean
     public PasswordEncoder passwordEncoder(){

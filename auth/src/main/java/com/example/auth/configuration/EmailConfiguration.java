@@ -11,6 +11,8 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.Properties;
 
+import static com.example.auth.utils.EmailUtils.*;
+
 @Configuration
 @Slf4j
 public class EmailConfiguration {
@@ -29,14 +31,14 @@ public class EmailConfiguration {
     }
 
     private void config(){
-        String smtpHost = "smtp.gmail.com";
+        String smtpHost = SMTP_HOST_NAME;
         int smtpPort = 587;
 
         properties = new Properties();
-        properties.put("mail.smtp.auth", "true");
-        properties.put("mail.smtp.starttls.enable", "true");
-        properties.put("mail.smtp.host", smtpHost);
-        properties.put("mail.smtp.port", smtpPort);
+        properties.put(SMTP_AUTH, "true");
+        properties.put(SMTP_STARTTLS, "true");
+        properties.put(MAIL_SMTP_HOST, smtpHost);
+        properties.put(MAIL_SMTP_PORT, smtpPort);
 
         this.auth = new Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
@@ -59,13 +61,13 @@ public class EmailConfiguration {
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipientEmail));
             message.setSubject(subject);
             MimeBodyPart mimeBodyPart = new MimeBodyPart();
-            mimeBodyPart.setContent(content, "text/html; charset=utf-8");
+            mimeBodyPart.setContent(content, CONTENT_TYPE);
             Multipart multipart = new MimeMultipart();
             multipart.addBodyPart(mimeBodyPart);
             message.setContent(multipart);
             Transport.send(message);
         }catch (MessagingException e) {
-            e.printStackTrace();
+            log.warn("Email not sent");
             if (onCreate){
                 refreshSession();
                 sendMail(recipientEmail,content,subject,false);

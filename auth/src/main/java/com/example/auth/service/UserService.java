@@ -2,6 +2,12 @@ package com.example.auth.service;
 
 
 import com.example.auth.entity.*;
+import com.example.auth.entity.enums.Code;
+import com.example.auth.entity.enums.Role;
+import com.example.auth.entity.responseAndData.AuthResponse;
+import com.example.auth.entity.responseAndData.ChangePasswordData;
+import com.example.auth.entity.responseAndData.LoginResponse;
+import com.example.auth.entity.responseAndData.UserRegisterData;
 import com.example.auth.exceptions.UserDontExistException;
 import com.example.auth.exceptions.UserExistingWithEmail;
 import com.example.auth.exceptions.UserExistingWithName;
@@ -12,6 +18,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,9 +30,13 @@ import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 
+import static com.example.auth.utils.SecurityUtils.AUTH_TOKEN;
+import static com.example.auth.utils.SecurityUtils.REFRESH_TOKEN;
+
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
 
     private final UserRepository userRepository;
@@ -50,7 +61,7 @@ public class UserService {
             validateToken(request, response);
             String refresh = null;
             for (Cookie value : Arrays.stream(request.getCookies()).toList()) {
-                if (value.getName().equals("refresh")) {
+                if (value.getName().equals(REFRESH_TOKEN)) {
                     refresh = value.getValue();
                 }
             }
@@ -58,15 +69,17 @@ public class UserService {
             User user = userRepository.findUserByLoginAndLockAndEnabled(login).orElse(null);
             if (user != null){
                 return ResponseEntity.ok(
-                        UserRegisterDto
+                        UserRegisterData
                                 .builder()
                                 .login(user.getUsername())
                                 .email(user.getEmail())
                                 .role(user.getRole())
                                 .build());
             }
+            log.warn("Login failed, user not exist");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthResponse(Code.USER_NOT_EXIST));
         }catch (ExpiredJwtException|IllegalArgumentException e){
+            log.warn("Login failed, token expired or null");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthResponse(Code.BAD_TOKEN));
         }
     }
@@ -79,6 +92,7 @@ public class UserService {
             userRepository.save(user);
             return;
         }
+        log.warn("User do not exist");
     throw new UserDontExistException("User do not exist");
     }
 
@@ -89,6 +103,7 @@ public class UserService {
             emailService.sendPasswordRecovery(user, resetOperations.getUid());
             return;
         }
+        log.warn("User do not exist");
         throw new UserDontExistException("User do not exist");
     }
 
@@ -97,11 +112,12 @@ public class UserService {
         return userRepository.saveAndFlush(user);
     }
     public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response){
-        Cookie cookie = cookieService.removeCookie(request.getCookies(),"Authorization");
+        log.info("Delete cookies");
+        Cookie cookie = cookieService.removeCookie(request.getCookies(),AUTH_TOKEN);
         if (cookie != null){
             response.addCookie(cookie);
         }
-        cookie = cookieService.removeCookie(request.getCookies(),"refresh");
+        cookie = cookieService.removeCookie(request.getCookies(), REFRESH_TOKEN);
         if (cookie != null){
             response.addCookie(cookie);
         }
@@ -126,33 +142,36 @@ public class UserService {
         String refresh = null;
         if (request.getCookies() != null){
             for (Cookie value : Arrays.stream(request.getCookies()).toList()) {
-                if (value.getName().equals("Authorization")) {
+                if (value.getName().equals(AUTH_TOKEN)) {
                     token = value.getValue();
-                } else if (value.getName().equals("refresh")) {
+                } else if (value.getName().equals(REFRESH_TOKEN)) {
                     refresh = value.getValue();
                 }
             }
         }else {
+            log.info("login failed, empty token");
             throw new IllegalArgumentException("Token can't be null");
         }
         try {
             jwtService.validateToken(token);
         }catch (IllegalArgumentException | ExpiredJwtException e){
             jwtService.validateToken(refresh);
-            Cookie refreshCokkie = cookieService.generateCookie("refresh", jwtService.refreshToken(refresh,refreshExp), refreshExp);
-            Cookie cookie = cookieService.generateCookie("Authorization", jwtService.refreshToken(refresh,exp), exp);
+            Cookie refreshCokkie = cookieService.generateCookie(REFRESH_TOKEN, jwtService.refreshToken(refresh,refreshExp), refreshExp);
+            Cookie cookie = cookieService.generateCookie(AUTH_TOKEN, jwtService.refreshToken(refresh,exp), exp);
             response.addCookie(cookie);
             response.addCookie(refreshCokkie);
         }
 
     }
-    public void register(UserRegisterDto userRegisterDto) throws UserExistingWithName, UserExistingWithEmail {
+    public void register(UserRegisterData userRegisterDto) throws UserExistingWithName, UserExistingWithEmail {
          userRepository.findUserByLogin(userRegisterDto.getLogin())
                  .ifPresent(value -> {
+                     log.warn("Username is taken");
                      throw new UserExistingWithName("Użytkownik o podanej nazwie już istnieje");
                  });
         userRepository.findUserByEmail(userRegisterDto.getEmail())
                 .ifPresent(value -> {
+                    log.warn("Email is taken");
                     throw new UserExistingWithEmail("Użytkownik o podanym adresie email już istnieje");
                 });
 
@@ -171,24 +190,27 @@ public class UserService {
     }
 
     public ResponseEntity<?> login(HttpServletResponse response, User authRequest) {
+        log.info("--START LoginService");
         User user = userRepository.findUserByLoginAndLockAndEnabled(authRequest.getUsername()).orElse(null);
         if (user != null) {
             Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
             if (authenticate.isAuthenticated()) {
-                Cookie refresh = cookieService.generateCookie("refresh", generateToken(authRequest.getUsername(),refreshExp), refreshExp);
-                Cookie cookie = cookieService.generateCookie("Authorization", generateToken(authRequest.getUsername(),exp), exp);
+                Cookie refresh = cookieService.generateCookie(REFRESH_TOKEN, generateToken(authRequest.getUsername(),refreshExp), refreshExp);
+                Cookie cookie = cookieService.generateCookie(AUTH_TOKEN, generateToken(authRequest.getUsername(), exp), exp);
                 response.addCookie(cookie);
                 response.addCookie(refresh);
                 return ResponseEntity.ok(
-                        UserRegisterDto
+                        UserRegisterData
                                 .builder()
                                 .login(user.getUsername())
                                 .email(user.getEmail())
                                 .role(user.getRole())
                                 .build());
             } else {
+                log.warn("Login Failed,WRONG DATA");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthResponse(Code.WRONG_DATA));            }
         }
+        log.warn("Login Failed, User do not exist");
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthResponse(Code.LOGIN_FAILED));
     }
 
@@ -205,6 +227,7 @@ public class UserService {
                 return;
             }
         }
+        log.warn("User do not exist");
         throw new UserDontExistException("User dont exist");
     }
 
