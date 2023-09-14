@@ -28,6 +28,6 @@ public class Product {
     private float price;
     private String[] imageUrls;
     private String parameters;
-    private LocalDate createdAt;
+    private LocalDate createAt;
 
 }
