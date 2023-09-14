@@ -31,16 +31,16 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<ProductEntity> getProduct(
-            String name, String category, Float price_min, Float price_max, String data,
+            String name, String category, Float price_min, Float price_max, String date,
             int page, int limit, String sort, String order) {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<ProductEntity> query = criteriaBuilder.createQuery(ProductEntity.class);
         Root<ProductEntity> root = query.from(ProductEntity.class);
 
-        if (data != null && !data.equals(EMPTY) && name != null && !name.trim().equals(EMPTY)) {
+        if (date != null && !date.equals(EMPTY) && name != null && !name.trim().equals(EMPTY)) {
             DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-            LocalDate date = LocalDate.parse(data, inputFormatter);
-            return productRepository.findByNameAndCreateAt(name, date);
+            LocalDate localDate = LocalDate.parse(date, inputFormatter);
+            return productRepository.findByNameAndCreateAt(name, localDate);
         }
 
         if (page <=0) {
@@ -57,7 +57,7 @@ public class ProductServiceImpl implements ProductService {
                 case "category":
                     column = COLUMN_CATEGORY;
                     break;
-                case "data":
+                case "date":
                     column = COLUMN_DATE;
                     break;
                 default:

@@ -1,6 +1,5 @@
 package com.example.product.entity;
 
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,19 +11,10 @@ import java.time.LocalDate;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@MappedSuperclass
-public class Product {
-
-
-    private String uid;
-    private boolean activate;
-    @Column(name = "product_name")
+public class SimpleProductDto {
     private String name;
     private String mainDesc;
-    private String descHtml;
     private float price;
-    private String[] imageUrls;
-    private String parameters;
+    private String imageUrl;
     private LocalDate createAt;
-
 }

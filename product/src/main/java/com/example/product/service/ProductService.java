@@ -9,7 +9,7 @@ import java.util.List;
 public interface ProductService {
 
     List<ProductEntity> getProduct(
-            String name, String category, Float priceMin, Float priceMax, String data,
+            String name, String category, Float priceMin, Float priceMax, String date,
             int page, int limit, String sort, String order);
 
     ProductDTO getProductDTO();
