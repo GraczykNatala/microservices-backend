@@ -34,6 +34,9 @@ public interface UserService {
 
     ResponseEntity<?> login(HttpServletResponse response, User authRequest);
     void resetPassword(ChangePasswordData changePasswordData) throws UserDontExistException;
+
+    void authorize(HttpServletRequest request);
+
 }
 
 

@@ -70,7 +70,7 @@ public class AuthController {
     }
 
     @RequestMapping(path = "/validate",method = RequestMethod.GET)
-    public ResponseEntity<AuthResponse> validateToken(HttpServletRequest request,HttpServletResponse response) {
+    public ResponseEntity<AuthResponse> validateToken(HttpServletRequest request, HttpServletResponse response) {
         try{
             log.info("--START VALIDATE TOKEN");
             userService.validateToken(request,response);
@@ -79,6 +79,23 @@ public class AuthController {
         }catch (IllegalArgumentException | ExpiredJwtException e){
             log.warn("Wrong token");
             return ResponseEntity.status(401).body(new AuthResponse(Code.BAD_TOKEN));
+        }
+    }
+
+    @RequestMapping(path = "/authorize",method = RequestMethod.GET)
+    public ResponseEntity<AuthResponse> authorize(HttpServletRequest request, HttpServletResponse response) {
+        try{
+            log.info("--START AUTHORIZE");
+            userService.validateToken(request,response);
+            userService.authorize(request);
+            log.info("--STOP AUTHORIZE");
+            return ResponseEntity.ok(new AuthResponse(Code.PERMIT));
+        } catch (IllegalArgumentException | ExpiredJwtException e){
+            log.warn("Wrong token");
+            return ResponseEntity.status(401).body(new AuthResponse(Code.BAD_TOKEN));
+        } catch (UserDontExistException e){
+            log.warn("User do not exist");
+            return ResponseEntity.status(401).body(new AuthResponse(Code.USER_NOT_EXIST));
         }
     }
 

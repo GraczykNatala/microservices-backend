@@ -12,6 +12,10 @@ public interface ProductService {
             String name, String category, Float priceMin, Float priceMax, String date,
             int page, int limit, String sort, String order);
 
+    void createProduct(ProductEntity product);
+
+    void delete(String uuid) throws RuntimeException;
+
     ProductDTO getProductDTO();
     long countActiveProducts(String name, String category, Float price_min, Float price_max);
 }

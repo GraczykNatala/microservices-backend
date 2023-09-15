@@ -1,13 +1,12 @@
 package com.example.product.controller;
 
+import com.example.product.entity.BasicResponse;
+import com.example.product.entity.ProductFormDTO;
 import com.example.product.mediator.ProductMediator;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import static com.example.product.Utils.Constant.COLUMN_PRICE;
 import static com.example.product.Utils.Constant.SORT_ASC;
@@ -35,4 +34,13 @@ public class ProductController {
                                               name_like, _category,
                                               price_min, price_max, date, _sort, _order);
     }
+    @RequestMapping(method = RequestMethod.POST)
+    public ResponseEntity<BasicResponse> save(@RequestBody ProductFormDTO form){
+        return productMediator.saveProduct(form);
+    }
+    @RequestMapping(method = RequestMethod.DELETE)
+    public ResponseEntity<BasicResponse> delete(@RequestParam String uuid){
+        return productMediator.deleteProduct(uuid);
+    }
+
 }

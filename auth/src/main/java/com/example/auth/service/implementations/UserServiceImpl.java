@@ -232,4 +232,32 @@ public class UserServiceImpl implements UserService {
         throw new UserDontExistException("User dont exist");
     }
 
+    @Override
+    public void authorize(HttpServletRequest request) throws UserDontExistException {
+        String token = null;
+        String refresh = null;
+        if (request.getCookies() != null){
+            for (Cookie value : Arrays.stream(request.getCookies()).toList()) {
+                if (value.getName().equals(AUTH_TOKEN)) {
+                    token = value.getValue();
+                } else if (value.getName().equals(REFRESH_TOKEN)) {
+                    refresh = value.getValue();
+                }
+            }
+        }else {
+            log.info("login failed, empty token");
+            throw new IllegalArgumentException("Token can't be null");
+        }
+            if (token != null && !token.isEmpty()) {
+                String subject = jwtService.getSubject(token);
+                userRepository.findUserByLoginAndLockAndEnabledAndIsAdmin(subject)
+                        .orElseThrow(() -> new UserDontExistException("User not found"));
+            } else if (refresh != null && !refresh.isEmpty()) {
+                String subject = jwtService.getSubject(token);
+                userRepository.findUserByLoginAndLockAndEnabledAndIsAdmin(subject)
+                        .orElseThrow(() -> new UserDontExistException("User not found"));
+
+            }
+    }
+
 }
